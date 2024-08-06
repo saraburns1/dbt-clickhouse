@@ -15,10 +15,9 @@
 {% macro clickhouse__create_csv_table(model, agate_table) %}
   {%- set column_override = model['config'].get('column_types', {}) -%}
   {%- set quote_seed_column = model['config'].get('quote_columns', None) -%}
-  {%- set schema_override = model['config'].get('schema', None) -%}
 
   {% set sql %}
-    create table {{ schema_override }}.{{ this.render() }} {{ on_cluster_clause(this) }} (
+    create table xapi.test {{ on_cluster_clause(this) }} (
       {%- for col_name in agate_table.column_names -%}
         {%- set inferred_type = adapter.convert_type(agate_table, loop.index0) -%}
         {%- set type = column_override.get(col_name, inferred_type) -%}
