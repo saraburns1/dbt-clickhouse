@@ -1,9 +1,10 @@
 {% macro clickhouse__load_csv_rows(model, agate_table) %}
   {% set cols_sql = get_seed_column_quoted_csv(model, agate_table.column_names) %}
   {% set data_sql = adapter.get_csv_data(agate_table) %}
+  {%- set schema_override = model['config'].get('schema', None) -%}
 
   {% set sql -%}
-    insert into {{ this.render() }} ({{ cols_sql }})
+    insert into {{schema_override}}.{{this.identifier}} ({{ cols_sql }})
     {{ adapter.get_model_query_settings(model) }}
     format CSV
     {{ data_sql }}
@@ -15,9 +16,10 @@
 {% macro clickhouse__create_csv_table(model, agate_table) %}
   {%- set column_override = model['config'].get('column_types', {}) -%}
   {%- set quote_seed_column = model['config'].get('quote_columns', None) -%}
+  {%- set schema_override = model['config'].get('schema', None) -%}
 
   {% set sql %}
-    create table xapi.test {{ on_cluster_clause(this) }} (
+    create table {{schema_override}}.{{this.identifier}} {{ on_cluster_clause(this) }} (
       {%- for col_name in agate_table.column_names -%}
         {%- set inferred_type = adapter.convert_type(agate_table, loop.index0) -%}
         {%- set type = column_override.get(col_name, inferred_type) -%}
